@@ -120,87 +120,174 @@ df['color'] = df['STATUS'].map(status_colors).fillna("#78909C")
 
 st.set_page_config(layout="wide")
 st.title("Transformer Management System")
-st.link_button(
-    "Raise DT/MF Change Request",
-    "https://docs.google.com/forms/d/e/1FAIpQLSc_R9NvcMn6ojAotyXCDPMroEyc-BSFOrusiu7OFnFSU9SnSQ/viewform"
-)
+
+# ---------------- KPI ---------------- #
 # ---------------- KPI ---------------- #
 
 counts = df['STATUS'].value_counts()
+
 cols = st.columns(7)
 
 def kpi(col, label, value, color):
-    col.markdown(f"""
-        <div style="background:{color};padding:10px;border-radius:6px;text-align:center;color:white">
-        {label}<br><b>{value}</b>
-        </div>
-    """, unsafe_allow_html=True)
 
-kpi(cols[0], "Total", len(df), "#78909C")
-kpi(cols[1], "Negligibly Loaded", counts.get("NEGLIGIBLY LOADED",0), "#81C784")
-kpi(cols[2], "Under Loaded", counts.get("UNDER LOADED",0), "#43A047")
-kpi(cols[3], "Optimally Loaded", counts.get("OPTIMALLY LOADED",0), "#1E88E5")
-kpi(cols[4], "Overloaded", counts.get("OVERLOADED",0), "#FB8C00")
-kpi(cols[5], "Critically Loaded", counts.get("CRITICALLY LOADED",0), "#D32F2F")
-kpi(cols[6], "Abnormally Loaded", counts.get("ABNORMALLY LOADED",0), "#4A0000")
+    col.markdown(
+        f"""
+<div style="
+background:{color};
+padding:18px;
+border-radius:12px;
+text-align:center;
+color:white;
+height:120px;
+display:flex;
+flex-direction:column;
+justify-content:center;
+align-items:center;
+box-shadow:0px 2px 8px rgba(0,0,0,0.15);
+">
 
+<div style="
+font-size:15px;
+font-weight:600;
+line-height:1.4;
+margin-bottom:10px;
+">
+{label}
+</div>
+
+<div style="
+font-size:30px;
+font-weight:bold;
+">
+{value}
+</div>
+
+</div>
+""",
+        unsafe_allow_html=True
+    )
+
+# -------- KPI CARDS -------- #
+
+kpi(
+    cols[0],
+    "Total Transformers",
+    len(df),
+    "#546E7A"
+)
+
+kpi(
+    cols[1],
+    "Negligibly Loaded<br>(0% to <25%)",
+    counts.get("NEGLIGIBLY LOADED", 0),
+    "#81C784"
+)
+
+kpi(
+    cols[2],
+    "Under Loaded<br>(25% to <50%)",
+    counts.get("UNDER LOADED", 0),
+    "#43A047"
+)
+
+kpi(
+    cols[3],
+    "Optimally Loaded<br>(50% to <80%)",
+    counts.get("OPTIMALLY LOADED", 0),
+    "#1E88E5"
+)
+
+kpi(
+    cols[4],
+    "Overloaded<br>(80% to <100%)",
+    counts.get("OVERLOADED", 0),
+    "#FB8C00"
+)
+
+kpi(
+    cols[5],
+    "Critically Loaded<br>(100% to <150%)",
+    counts.get("CRITICALLY LOADED", 0),
+    "#D32F2F"
+)
+
+kpi(
+    cols[6],
+    "Abnormally Loaded<br>(≥150%)",
+    counts.get("ABNORMALLY LOADED", 0),
+    "#4A0000"
+)
 # ---------------- FILTER ---------------- #
-
 
 f1, f2, f3, f4 = st.columns(4)
 
 # -------- CIRCLE -------- #
-circle = f1.selectbox("Circle", ["ALL"] + sorted(df['CIRCLE'].unique()))
+
+circle = f1.multiselect(
+    "Circle",
+    sorted(df['CIRCLE'].dropna().unique())
+)
 
 # -------- DIVISION (depends on Circle) -------- #
-if circle == "ALL":
-    division_options = sorted(df['DIVISION'].unique())
-else:
-    division_options = sorted(df[df['CIRCLE'] == circle]['DIVISION'].unique())
 
-division = f2.selectbox("Division", ["ALL"] + division_options)
+if len(circle) == 0:
+    division_options = sorted(df['DIVISION'].dropna().unique())
+else:
+    division_options = sorted(
+        df[df['CIRCLE'].isin(circle)]['DIVISION'].dropna().unique()
+    )
+
+division = f2.multiselect(
+    "Division",
+    division_options
+)
 
 # -------- ZONE (depends on Circle + Division) -------- #
+
 temp_df = df.copy()
 
-if circle != "ALL":
-    temp_df = temp_df[temp_df['CIRCLE'] == circle]
+if len(circle) > 0:
+    temp_df = temp_df[temp_df['CIRCLE'].isin(circle)]
 
-if division != "ALL":
-    temp_df = temp_df[temp_df['DIVISION'] == division]
+if len(division) > 0:
+    temp_df = temp_df[temp_df['DIVISION'].isin(division)]
 
-zone_options = sorted(temp_df['ZONE'].unique())
+zone_options = sorted(temp_df['ZONE'].dropna().unique())
 
-zone = f3.selectbox("Zone", ["ALL"] + zone_options)
+zone = f3.multiselect(
+    "Zone",
+    zone_options
+)
 
 # -------- STATUS -------- #
-status_filter = f4.selectbox(
+
+status_filter = f4.multiselect(
     "Status",
     [
-    "ALL",
-    "NEGLIGIBLY LOADED",
-    "UNDER LOADED",
-    "OPTIMALLY LOADED",
-    "OVERLOADED",
-    "CRITICALLY LOADED",
-    "ABNORMALLY LOADED"
-]
+        "NEGLIGIBLY LOADED (0% to <25%)",
+        "UNDER LOADED (25% to <50%)",
+        "OPTIMALLY LOADED (50% to <80%)",
+        "OVERLOADED (80% to <100%)",
+        "CRITICALLY LOADED (100% to <150%)",
+        "ABNORMALLY LOADED (≥150%)"
+    ]
 )
 
 # -------- FINAL FILTERING -------- #
+
 df_filtered = df.copy()
 
-if circle != "ALL":
-    df_filtered = df_filtered[df_filtered['CIRCLE'] == circle]
+if len(circle) > 0:
+    df_filtered = df_filtered[df_filtered['CIRCLE'].isin(circle)]
 
-if division != "ALL":
-    df_filtered = df_filtered[df_filtered['DIVISION'] == division]
+if len(division) > 0:
+    df_filtered = df_filtered[df_filtered['DIVISION'].isin(division)]
 
-if zone != "ALL":
-    df_filtered = df_filtered[df_filtered['ZONE'] == zone]
+if len(zone) > 0:
+    df_filtered = df_filtered[df_filtered['ZONE'].isin(zone)]
 
-if status_filter != "ALL":
-    df_filtered = df_filtered[df_filtered['STATUS'] == status_filter]
+if len(status_filter) > 0:
+    df_filtered = df_filtered[df_filtered['STATUS'].isin(status_filter)]
 
 # ---------------- SEARCH ---------------- #
 
@@ -252,7 +339,7 @@ if selected is not None and selected['STATUS'] in ["OVERLOADED","CRITICALLY LOAD
     (~df['FAULTY'])
 ]
 
-    for level in ["CIRCLE","DIVISION","ZONE"]:
+    for level in ["ZONE", "DIVISION", "CIRCLE"]:
 
         subset = under_df[under_df[level]==selected[level]]
         temp = []
@@ -297,14 +384,31 @@ if selected is not None and selected['STATUS'] in ["OVERLOADED","CRITICALLY LOAD
                 "Proposed DT Status (After Swap)": get_status(new_can),
 
                 "Years Safe (Post Swap)": f"{yrs} years",
-                "Distance (km)": f"{round(dist,2)} km",
+                "Distance (km)": dist,
 
                 "Lat": row['Lattitude'],
                 "Long": row['Longitude']
             })
 
         if temp:
-            rec_df = pd.DataFrame(temp).sort_values("Distance (km)").head(5)
+
+            rec_df = (
+                        pd.DataFrame(temp)
+        .sort_values(
+            by=["Years Safe (Post Swap)", "Distance (km)"],
+            ascending=[False, True]
+        )
+        .head(5)
+        .reset_index(drop=True)
+    )
+
+    # add km text after sorting
+            rec_df["Distance (km)"] = (
+        rec_df["Distance (km)"]
+        .round(2)
+        .astype(str) + " km"
+    )
+
             break
 
 if selected is not None and selected['STATUS'] == "ABNORMALLY LOADED":
@@ -327,9 +431,30 @@ if selected is None:
             opacity=0.4,
             color=df_filtered['color']
         ),
+
         text=df_filtered['DT NAME'],
-        customdata=df_filtered[['DT CODE','STATUS','LOAD_PCT']],
-        hovertemplate="<b>%{text}</b><br>Code: %{customdata[0]}<br>Status: %{customdata[1]}<br>Load: %{customdata[2]:.1f}%<extra></extra>"
+
+        customdata=df_filtered[[
+    'DT CODE',
+    'METER NO.',
+    'DT CAPACITY (IN KVA)',
+    'STATUS',
+    'LOAD_PCT',
+    'CIRCLE',
+    'DIVISION',
+    'ZONE'
+]],
+
+hovertemplate=
+"<b>%{text}</b><br>" +
+"DT Code: %{customdata[0]}<br>" +
+"Meter No: %{customdata[1]}<br>" +
+"Capacity: %{customdata[2]} kVA<br>" +
+"Status: %{customdata[3]}<br>" +
+"Load: %{customdata[4]:.1f}%<br>" +
+"Circle: %{customdata[5]}<br>" +
+"Division: %{customdata[6]}<br>" +
+"Zone: %{customdata[7]}<extra></extra>"
     ))
 
 # -------- RECOMMENDED -------- #
@@ -341,15 +466,34 @@ if not rec_df.empty:
         lon=rec_df['Long'],
         mode='markers',
         name="Recommended",
+
         marker=dict(
             size=14,
             color="#FFD54F"
         ),
-        text=rec_df['Proposed DT Name'],
-        customdata=rec_df[['Proposed DT Code','Years Safe (Post Swap)']],
-        hovertemplate="<b>%{text}</b><br>Code: %{customdata[0]}<br>Years Safe: %{customdata[1]}<extra></extra>"
-    ))
 
+        text=rec_df['Proposed DT Name'],
+
+        customdata=rec_df[[
+            'Proposed DT Code',
+            'Proposed Capacity (kVA)',
+            'Circle',
+            'Division',
+            'Zone',
+            'Years Safe (Post Swap)',
+            'Distance (km)'
+        ]],
+
+        hovertemplate=
+        "<b>%{text}</b><br>" +
+        "DT Code: %{customdata[0]}<br>" +
+        "Capacity: %{customdata[1]}<br>" +
+        "Circle: %{customdata[2]}<br>" +
+        "Division: %{customdata[3]}<br>" +
+        "Zone: %{customdata[4]}<br>" +
+        "Years Safe: %{customdata[5]}<br>" +
+        "Distance: %{customdata[6]}<extra></extra>"
+    ))
 # -------- SELECTED -------- #
 
 if selected is not None:
@@ -359,19 +503,36 @@ if selected is not None:
         lon=[selected['Longitude']],
         mode='markers',
         name="Selected",
+
         marker=dict(
             size=18,
             color="black"
         ),
+
         text=[selected['DT NAME']],
+
         customdata=[[
             selected['DT CODE'],
+            selected['METER NO.'],
+            selected['DT CAPACITY (IN KVA)'],
             selected['LOAD_PCT'],
-            selected['STATUS']
+            selected['STATUS'],
+            selected['CIRCLE'],
+            selected['DIVISION'],
+            selected['ZONE']
         ]],
-        hovertemplate="<b>%{text}</b><br>Code: %{customdata[0]}<br>Load: %{customdata[1]:.1f}%<br>Status: %{customdata[2]}<extra></extra>"
-    ))
 
+        hovertemplate=
+        "<b>%{text}</b><br>" +
+        "DT Code: %{customdata[0]}<br>" +
+        "Meter No: %{customdata[1]}<br>" +
+        "Capacity: %{customdata[2]} kVA<br>" +
+        "Load: %{customdata[3]:.1f}%<br>" +
+        "Status: %{customdata[4]}<br>" +
+        "Circle: %{customdata[5]}<br>" +
+        "Division: %{customdata[6]}<br>" +
+        "Zone: %{customdata[7]}<extra></extra>"
+    ))
 # -------- MAP CENTER -------- #
 
 if selected is not None:
@@ -513,7 +674,7 @@ if not abnormal_df.empty:
 faulty_df = df[df['FAULTY']]
 
 if not faulty_df.empty:
-    st.subheader("Faulty Transformers (Phase Mismatch)")
+    st.subheader("Suspected DT Meter wiring issues")
 
     st.dataframe(
         faulty_df[[
