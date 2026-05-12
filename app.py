@@ -393,55 +393,110 @@ rec_df = pd.DataFrame()
 if selected is not None and selected['STATUS'] in ["OVERLOADED","CRITICALLY LOADED"]:
 
     under_df = df[
-    (df['STATUS'].isin(["NEGLIGIBLY LOADED", "UNDER LOADED"])) &
-    (~df['FAULTY'])
-]
+        (df['STATUS'].isin(["NEGLIGIBLY LOADED", "UNDER LOADED"])) &
+        (~df['FAULTY'])
+    ]
 
+    # PRIORITY SEARCH ORDER
     for level in ["ZONE", "DIVISION", "CIRCLE"]:
 
-        subset = under_df[under_df[level]==selected[level]]
+        subset = under_df[
+            under_df[level] == selected[level]
+        ].copy()
+
+        # SAME FEEDER PRIORITY
+        subset["Feeder Priority"] = (
+            subset["Feeder Name"] == selected["Feeder Name"]
+        )
+
         temp = []
 
         for _, row in subset.iterrows():
 
             try:
-                new_sel = (row['LOAD_PCT']*row['DT CAPACITY (IN KVA)'])/selected['DT CAPACITY (IN KVA)']
-                new_can = (selected['LOAD_PCT']*selected['DT CAPACITY (IN KVA)'])/row['DT CAPACITY (IN KVA)']
+                new_sel = (
+                    row['LOAD_PCT'] *
+                    row['DT CAPACITY (IN KVA)']
+                ) / selected['DT CAPACITY (IN KVA)']
+
+                new_can = (
+                    selected['LOAD_PCT'] *
+                    selected['DT CAPACITY (IN KVA)']
+                ) / row['DT CAPACITY (IN KVA)']
+
             except:
                 continue
 
+            # BOTH MUST REMAIN HEALTHY
             if get_status(new_sel) not in ["UNDER LOADED","OPTIMALLY LOADED"]:
                 continue
+
             if get_status(new_can) not in ["UNDER LOADED","OPTIMALLY LOADED"]:
                 continue
 
-            yrs = min(years_safe(new_sel), years_safe(new_can))
+            # MINIMUM SAFE YEARS
+            yrs = min(
+                years_safe(new_sel),
+                years_safe(new_can)
+            )
+
             if yrs < 5:
                 continue
 
+            # DISTANCE
             dist = geodesic(
-                (selected['Lattitude'],selected['Longitude']),
-                (row['Lattitude'],row['Longitude'])
+                (
+                    selected['Lattitude'],
+                    selected['Longitude']
+                ),
+                (
+                    row['Lattitude'],
+                    row['Longitude']
+                )
             ).km
 
             temp.append({
+
+                "Same Feeder":
+                    "YES" if row["Feeder Name"] == selected["Feeder Name"]
+                    else "NO",
+
+                "Feeder Priority":
+                    1 if row["Feeder Name"] == selected["Feeder Name"]
+                    else 0,
+
                 "Circle": row['CIRCLE'],
                 "Division": row['DIVISION'],
                 "Zone": row['ZONE'],
+
                 "Proposed DT Code": row['DT CODE'],
                 "Proposed DT Name": row['DT NAME'],
                 "Feeder": row['Feeder Name'],
-                "Proposed Capacity (kVA)": f"{row['DT CAPACITY (IN KVA)']} kVA",
 
-                "Problem DT Load (Before Swap)": f"{round(selected['LOAD_PCT'],1)} %",
-                "Problem DT Load (After Swap)": f"{round(new_sel,1)} %",
-                "Problem DT Status (After Swap)": get_status(new_sel),
+                "Proposed Capacity (kVA)":
+                    f"{row['DT CAPACITY (IN KVA)']} kVA",
 
-                "Proposed DT Load (Before Swap)": f"{round(row['LOAD_PCT'],1)} %",
-                "Proposed DT Load (After Swap)": f"{round(new_can,1)} %",
-                "Proposed DT Status (After Swap)": get_status(new_can),
+                "Problem DT Load (Before Swap)":
+                    f"{round(selected['LOAD_PCT'],1)} %",
 
-                "Years Safe (Post Swap)": f"{yrs} years",
+                "Problem DT Load (After Swap)":
+                    f"{round(new_sel,1)} %",
+
+                "Problem DT Status (After Swap)":
+                    get_status(new_sel),
+
+                "Proposed DT Load (Before Swap)":
+                    f"{round(row['LOAD_PCT'],1)} %",
+
+                "Proposed DT Load (After Swap)":
+                    f"{round(new_can,1)} %",
+
+                "Proposed DT Status (After Swap)":
+                    get_status(new_can),
+
+                "Years Safe (Post Swap)":
+                    f"{yrs} years",
+
                 "Distance (km)": dist,
 
                 "Lat": row['Lattitude'],
@@ -451,27 +506,26 @@ if selected is not None and selected['STATUS'] in ["OVERLOADED","CRITICALLY LOAD
         if temp:
 
             rec_df = (
-                        pd.DataFrame(temp)
-        .sort_values(
-            by=["Years Safe (Post Swap)", "Distance (km)"],
-            ascending=[False, True]
-        )
-        .head(5)
-        .reset_index(drop=True)
-    )
+                pd.DataFrame(temp)
+                .sort_values(
+                    by=[
+                        "Feeder Priority",
+                        "Years Safe (Post Swap)",
+                        "Distance (km)"
+                    ],
+                    ascending=[False, False, True]
+                )
+                .head(5)
+                .reset_index(drop=True)
+            )
 
-    # add km text after sorting
             rec_df["Distance (km)"] = (
-        rec_df["Distance (km)"]
-        .round(2)
-        .astype(str) + " km"
-    )
+                rec_df["Distance (km)"]
+                .round(2)
+                .astype(str) + " km"
+            )
 
-            break
-
-if selected is not None and selected['STATUS'] == "ABNORMALLY LOADED":
-    st.warning("Recommender not applicable for Abnormally Loaded transformers")
-# ---------------- MAP ---------------- #
+            break# ---------------- MAP ---------------- #
 
 fig = go.Figure()
 
