@@ -122,7 +122,7 @@ st.set_page_config(layout="wide")
 st.title("Transformer Management System")
 
 # ---------------- KPI ---------------- #
-# ---------------- KPI ---------------- #
+
 
 counts = df['STATUS'].value_counts()
 
@@ -217,9 +217,47 @@ kpi(
     counts.get("ABNORMALLY LOADED", 0),
     "#4A0000"
 )
+# ---------------- REQUEST BUTTON ---------------- #
+
+st.markdown(
+    """
+    <div style="margin-top:20px; margin-bottom:20px;">
+
+        <a href="https://docs.google.com/forms/d/e/1FAIpQLSc_R9NvcMn6ojAotyXCDPMroEyc-BSFOrusiu7OFnFSU9SnSQ/viewform"
+           target="_blank"
+           style="
+                text-decoration:none;
+           ">
+
+            <div style="
+                background-color:#1976D2;
+                color:white;
+                padding:16px 28px;
+                border-radius:12px;
+                text-align:center;
+                font-size:20px;
+                font-weight:600;
+                box-shadow:0px 4px 10px rgba(0,0,0,0.18);
+                transition:0.3s;
+                cursor:pointer;
+            ">
+
+                Raise DT / MF Change Request
+
+            </div>
+
+        </a>
+
+    </div>
+    """,
+    unsafe_allow_html=True
+)
 # ---------------- FILTER ---------------- #
 
 f1, f2, f3, f4 = st.columns(4)
+st.info(
+    "Select or enter an Overloaded or Critically Loaded transformer to generate optimal swap recommendations."
+)
 
 # -------- CIRCLE -------- #
 
@@ -261,18 +299,31 @@ zone = f3.multiselect(
 
 # -------- STATUS -------- #
 
+status_display_map = {
+
+    "NEGLIGIBLY LOADED (0% to <25%)":
+        "NEGLIGIBLY LOADED",
+
+    "UNDER LOADED (25% to <50%)":
+        "UNDER LOADED",
+
+    "OPTIMALLY LOADED (50% to <80%)":
+        "OPTIMALLY LOADED",
+
+    "OVERLOADED (80% to <100%)":
+        "OVERLOADED",
+
+    "CRITICALLY LOADED (100% to <150%)":
+        "CRITICALLY LOADED",
+
+    "ABNORMALLY LOADED (≥150%)":
+        "ABNORMALLY LOADED"
+}
+
 status_filter = f4.multiselect(
     "Status",
-    [
-        "NEGLIGIBLY LOADED (0% to <25%)",
-        "UNDER LOADED (25% to <50%)",
-        "OPTIMALLY LOADED (50% to <80%)",
-        "OVERLOADED (80% to <100%)",
-        "CRITICALLY LOADED (100% to <150%)",
-        "ABNORMALLY LOADED (≥150%)"
-    ]
+    list(status_display_map.keys())
 )
-
 # -------- FINAL FILTERING -------- #
 
 df_filtered = df.copy()
@@ -287,7 +338,15 @@ if len(zone) > 0:
     df_filtered = df_filtered[df_filtered['ZONE'].isin(zone)]
 
 if len(status_filter) > 0:
-    df_filtered = df_filtered[df_filtered['STATUS'].isin(status_filter)]
+
+    actual_status = [
+        status_display_map[s]
+        for s in status_filter
+    ]
+
+    df_filtered = df_filtered[
+        df_filtered['STATUS'].isin(actual_status)
+    ]
 
 # ---------------- SEARCH ---------------- #
 
@@ -550,17 +609,32 @@ else:
 fig.update_layout(
     map=dict(
         style="carto-positron",
+
         center=dict(
             lat=center_lat,
             lon=center_lon
         ),
+
         zoom=zoom_level
     ),
-    height=600,
-    legend=dict(orientation="h")
+
+    height=800,
+
+    margin=dict(
+        l=0,
+        r=0,
+        t=0,
+        b=0
+    )
 )
 
-st.plotly_chart(fig, use_container_width=True)
+st.plotly_chart(
+    fig,
+    use_container_width=True,
+    config={
+        "scrollZoom": True
+    }
+)
 # ---------------- DETAILS ---------------- #
 
 if selected is not None:
