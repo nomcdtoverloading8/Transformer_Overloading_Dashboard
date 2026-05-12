@@ -495,7 +495,7 @@ fig = go.Figure()
 
 if selected is None:
 
-    fig.add_trace(go.Scattermap(
+    fig.add_trace(go.Scattermapbox(
         lat=df_filtered['Lattitude'],
         lon=df_filtered['Longitude'],
         mode='markers',
@@ -535,7 +535,7 @@ hovertemplate=
 
 if not rec_df.empty:
 
-    fig.add_trace(go.Scattermap(
+    fig.add_trace(go.Scattermapbox(
         lat=rec_df['Lat'],
         lon=rec_df['Long'],
         mode='markers',
@@ -572,7 +572,7 @@ if not rec_df.empty:
 
 if selected is not None:
 
-    fig.add_trace(go.Scattermap(
+    fig.add_trace(go.Scattermapbox(
         lat=[selected['Lattitude']],
         lon=[selected['Longitude']],
         mode='markers',
