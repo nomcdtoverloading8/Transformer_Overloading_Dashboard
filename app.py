@@ -249,6 +249,7 @@ st.markdown(
                 font-size:20px;
                 font-weight:600;
                 box-shadow:0px 4px 10px rgba(0,0,0,0.18);
+                transition:0.3s;
                 cursor:pointer;
             ">
 
@@ -260,7 +261,8 @@ st.markdown(
 
     </div>
     """,
-    unsafe_allow_html=True)
+    unsafe_allow_html=True
+)
 # ---------------- FILTER ---------------- #
 
 f1, f2, f3, f4 = st.columns(4)
@@ -495,7 +497,7 @@ fig = go.Figure()
 
 if selected is None:
 
-    fig.add_trace(go.Scattermapbox(
+    fig.add_trace(go.Scattermap(
         lat=df_filtered['Lattitude'],
         lon=df_filtered['Longitude'],
         mode='markers',
@@ -535,7 +537,7 @@ hovertemplate=
 
 if not rec_df.empty:
 
-    fig.add_trace(go.Scattermapbox(
+    fig.add_trace(go.Scattermap(
         lat=rec_df['Lat'],
         lon=rec_df['Long'],
         mode='markers',
@@ -572,7 +574,7 @@ if not rec_df.empty:
 
 if selected is not None:
 
-    fig.add_trace(go.Scattermapbox(
+    fig.add_trace(go.Scattermap(
         lat=[selected['Lattitude']],
         lon=[selected['Longitude']],
         mode='markers',
