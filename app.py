@@ -221,37 +221,35 @@ kpi(
 
 st.markdown(
     """
-    <div style="margin-top:20px; margin-bottom:20px;">
+    <style>
+    .request-button {
+        display: inline-block;
+        background-color: #1976D2;
+        color: white !important;
+        padding: 14px 28px;
+        border-radius: 12px;
+        text-decoration: none;
+        font-size: 20px;
+        font-weight: 600;
+        text-align: center;
+        box-shadow: 0px 4px 10px rgba(0,0,0,0.18);
+        margin-top: 20px;
+        margin-bottom: 20px;
+    }
 
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSc_R9NvcMn6ojAotyXCDPMroEyc-BSFOrusiu7OFnFSU9SnSQ/viewform"
-           target="_blank"
-           style="
-                text-decoration:none;
-           ">
+    .request-button:hover {
+        background-color: #1565C0;
+        color: white !important;
+    }
+    </style>
 
-            <div style="
-                background-color:#1976D2;
-                color:white;
-                padding:16px 28px;
-                border-radius:12px;
-                text-align:center;
-                font-size:20px;
-                font-weight:600;
-                box-shadow:0px 4px 10px rgba(0,0,0,0.18);
-                transition:0.3s;
-                cursor:pointer;
-            ">
-
-                Raise DT / MF Change Request
-
-            </div>
-
-        </a>
-
-    </div>
+    <a class="request-button"
+       href="https://docs.google.com/forms/d/e/1FAIpQLSc_R9NvcMn6ojAotyXCDPMroEyc-BSFOrusiu7OFnFSU9SnSQ/viewform"
+       target="_blank">
+       Raise DT / MF Change Request
+    </a>
     """,
-    unsafe_allow_html=True
-)
+    unsafe_allow_html=True)
 # ---------------- FILTER ---------------- #
 
 f1, f2, f3, f4 = st.columns(4)
