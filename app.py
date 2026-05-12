@@ -230,40 +230,11 @@ kpi(
 )
 # ---------------- REQUEST BUTTON ---------------- #
 
-st.markdown(
-    """
-    <div style="margin-top:20px; margin-bottom:20px;">
-
-        <a href="https://docs.google.com/forms/d/e/1FAIpQLSc_R9NvcMn6ojAotyXCDPMroEyc-BSFOrusiu7OFnFSU9SnSQ/viewform"
-           target="_blank"
-           style="
-                text-decoration:none;
-           ">
-
-            <div style="
-                background-color:#1976D2;
-                color:white;
-                padding:16px 28px;
-                border-radius:12px;
-                text-align:center;
-                font-size:20px;
-                font-weight:600;
-                box-shadow:0px 4px 10px rgba(0,0,0,0.18);
-                transition:0.3s;
-                cursor:pointer;
-            ">
-
-                Raise DT / MF Change Request
-
-            </div>
-
-        </a>
-
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-# ---------------- FILTER ---------------- #
+st.link_button(
+    "Raise DT / MF Change Request",
+    "https://docs.google.com/forms/d/e/1FAIpQLSc_R9NvcMn6ojAotyXCDPMroEyc-BSFOrusiu7OFnFSU9SnSQ/viewform",
+    use_container_width=True
+)# ---------------- FILTER ---------------- #
 
 f1, f2, f3, f4 = st.columns(4)
 st.info(
