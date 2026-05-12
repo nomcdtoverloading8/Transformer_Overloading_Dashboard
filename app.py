@@ -230,10 +230,15 @@ kpi(
 )
 # ---------------- REQUEST BUTTON ---------------- #
 
+st.markdown("<br>", unsafe_allow_html=True)
+
 st.link_button(
     "Raise DT / MF Change Request",
     "https://docs.google.com/forms/d/e/1FAIpQLSc_R9NvcMn6ojAotyXCDPMroEyc-BSFOrusiu7OFnFSU9SnSQ/viewform",
     use_container_width=True
+)
+
+st.markdown("<br>", unsafe_allow_html=True)
 )# ---------------- FILTER ---------------- #
 
 f1, f2, f3, f4 = st.columns(4)
