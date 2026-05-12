@@ -228,7 +228,7 @@ st.markdown(
         color: white !important;
         padding: 14px 28px;
         border-radius: 12px;
-        text-decoration: none;
+        text-decoration: none !important;
         font-size: 20px;
         font-weight: 600;
         text-align: center;
@@ -240,6 +240,7 @@ st.markdown(
     .request-button:hover {
         background-color: #1565C0;
         color: white !important;
+        text-decoration: none !important;
     }
     </style>
 
