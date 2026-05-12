@@ -238,7 +238,7 @@ st.link_button(
     use_container_width=True
 )
 
-st.markdown("<br>", unsafe_allow_html=True))
+st.markdown("<br>", unsafe_allow_html=True)
 # ---------------- FILTER ---------------- #
 
 f1, f2, f3, f4 = st.columns(4)
