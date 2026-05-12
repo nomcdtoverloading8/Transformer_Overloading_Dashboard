@@ -249,7 +249,6 @@ st.markdown(
                 font-size:20px;
                 font-weight:600;
                 box-shadow:0px 4px 10px rgba(0,0,0,0.18);
-                transition:0.3s;
                 cursor:pointer;
             ">
 
@@ -261,8 +260,7 @@ st.markdown(
 
     </div>
     """,
-    unsafe_allow_html=True
-)
+    unsafe_allow_html=True)
 # ---------------- FILTER ---------------- #
 
 f1, f2, f3, f4 = st.columns(4)
