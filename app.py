@@ -441,15 +441,32 @@ if selected is not None and selected['STATUS'] in ["OVERLOADED","CRITICALLY LOAD
 
         if temp:
 
-            rec_df = (
-                        pd.DataFrame(temp)
-        .sort_values(
-            by=["Years Safe (Post Swap)", "Distance (km)"],
-            ascending=[False, True]
-        )
-        .head(5)
-        .reset_index(drop=True)
+            # ---------------- FEEDER PRIORITY ---------------- #
+
+temp_df = pd.DataFrame(temp)
+
+# same feeder gets highest priority
+temp_df["Feeder Priority"] = (
+    temp_df["Feeder"] != selected["Feeder Name"]
+)
+
+# False = same feeder = comes first
+rec_df = (
+    temp_df
+    .sort_values(
+        by=[
+            "Feeder Priority",
+            "Years Safe (Post Swap)",
+            "Distance (km)"
+        ],
+        ascending=[True, False, True]
     )
+    .head(5)
+    .reset_index(drop=True)
+)
+
+# remove helper column
+rec_df = rec_df.drop(columns=["Feeder Priority"])
 
     # add km text after sorting
             rec_df["Distance (km)"] = (
